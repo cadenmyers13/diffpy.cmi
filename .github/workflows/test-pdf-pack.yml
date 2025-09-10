@@ -28,33 +28,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          conda install -y matplotlib diffpy.cmi
+          conda install -y pytest matplotlib diffpy.cmi
           conda install --file requirements/packs/core.txt -y
           conda install --file requirements/packs/docs.txt -y
           conda install --file requirements/packs/pdf.txt -y
           conda install --file requirements/packs/plotting.txt -y
           conda install --file requirements/packs/tests.txt -y
 
-      - name: List Installed Packages
-        run: conda list
-
-      - name: Validate Python Environment
-        run: |
-          source "$(conda info --base)/etc/profile.d/conda.sh"
-          conda activate test
-          echo "Python version: $(python --version)"
-          echo "Python executable: $(which python)"
-          python -m pip list
-
-      - name: Run diffpy.cmi scripts
-        shell: bash -l {0}
-        run: |
-          set -e
-          source "$(conda info --base)/etc/profile.d/conda.sh"
-          conda activate test
-          export MPLBACKEND=Agg
-          echo "Active Conda environment: $(conda env list | grep \*)"
-          for script in docs/examples/ch*/solutions/diffpy-cmi/*.py; do
-            echo "Running $script..."
-            python "$script"
-          done
+      - name: Run pytest
+        run: conda run -n test pytest tests/
