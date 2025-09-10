@@ -30,7 +30,8 @@ jobs:
           conda install --file requirements/packs/pdf.txt -y
           conda install --file requirements/packs/plotting.txt -y
           conda install --file requirements/packs/tests.txt -y
-
+      - name: List Conda Installed Packages
+        run: conda list
       - name: Run diffpy.cmi scripts from docs/examples
         shell: bash
         run: |
