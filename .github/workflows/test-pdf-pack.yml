@@ -24,8 +24,7 @@ jobs:
           channels: conda-forge
       - name: Install diffpy.cmi and dependencies
         run: |
-          conda install -y diffpy.cmi
-          conda install matplotlib -y
+          conda install -y -c conda-forge matplotlib diffpy.cmi
           conda install --file requirements/packs/core.txt -y
           conda install --file requirements/packs/docs.txt -y
           conda install --file requirements/packs/pdf.txt -y
