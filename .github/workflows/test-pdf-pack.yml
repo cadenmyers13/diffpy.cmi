@@ -25,11 +25,13 @@ jobs:
       - name: Install diffpy.cmi and dependencies
         run: |
           conda install -y diffpy.cmi
+          conda install matplotlib -y
           conda install --file requirements/packs/core.txt -y
           conda install --file requirements/packs/docs.txt -y
           conda install --file requirements/packs/pdf.txt -y
           conda install --file requirements/packs/plotting.txt -y
           conda install --file requirements/packs/tests.txt -y
+
       - name: Run diffpy.cmi scripts from docs/examples
         shell: bash
         run: |
