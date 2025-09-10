@@ -38,6 +38,14 @@ jobs:
       - name: List Installed Packages
         run: conda list
 
+      - name: Validate Python Environment
+        run: |
+          source "$(conda info --base)/etc/profile.d/conda.sh"
+          conda activate test
+          echo "Python version: $(python --version)"
+          echo "Python executable: $(which python)"
+          python -m pip list
+
       - name: Run diffpy.cmi scripts
         shell: bash -l {0}
         run: |
