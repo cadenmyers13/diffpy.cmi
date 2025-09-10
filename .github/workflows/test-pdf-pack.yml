@@ -42,7 +42,10 @@ jobs:
         shell: bash -l {0}
         run: |
           set -e
+          source "$(conda info --base)/etc/profile.d/conda.sh"
+          conda activate test
           export MPLBACKEND=Agg
+          echo "Active Conda environment: $(conda env list | grep \*)"
           for script in docs/examples/ch*/solutions/diffpy-cmi/*.py; do
             echo "Running $script..."
             python "$script"
