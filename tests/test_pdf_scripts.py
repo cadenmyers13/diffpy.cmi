@@ -27,23 +27,25 @@ def test_script_execution(monkeypatch, script_path):
         ni_script = script_path.replace("fitNPPt.py", "fitBulkNi.py")
         ni_script_path = Path(ni_script)
 
-        if ni_script_path.exists():
-            # Run Ni calibration first
-            result_ni = subprocess.run(
-                ["python", str(ni_script_path)],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
+        if not ni_script_path.exists():
+            pytest.fail(
+                f"Required script {ni_script} not found for {script_path}"
             )
-            if result_ni.returncode != 0:
-                pytest.skip(
-                    f"Skipping {script_path} because Ni ",
-                    "calibration failed:\n{result_ni.stderr}",
-                )
-        else:
-            pytest.skip(
-                f"Skipping {script_path} because {ni_script} is missing"
+
+        # Run Ni calibration first
+        result_ni = subprocess.run(
+            ["python", str(ni_script_path)],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        if result_ni.returncode != 0:
+            pytest.fail(
+                f"Calibration script {ni_script}",
+                " failed with error:\n{result_ni.stderr}",
             )
+
+    # Run the target script
     result = subprocess.run(
         ["python", script_path],
         stdout=subprocess.PIPE,
@@ -51,6 +53,7 @@ def test_script_execution(monkeypatch, script_path):
         text=True,
     )
 
+    # Ensure the script runs successfully
     assert (
         result.returncode == 0
     ), f"Script {script_path} failed with error:\n{result.stderr}"
