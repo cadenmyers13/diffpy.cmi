@@ -1,51 +1,26 @@
 import glob
 import subprocess
-from pathlib import Path
 
 import matplotlib.pyplot as plt
 import pytest
 
 
-# A no-op function to replace plt.show() during tests
+# Disable plt.show() so scripts don't block tests
 def no_op(*args, **kwargs):
     pass
 
 
-# Discover all example scripts
+# Collect all example scripts
 example_scripts = glob.glob("docs/examples/ch*/solutions/diffpy-cmi/*.py")
 
 
 @pytest.mark.parametrize("script_path", example_scripts)
-def test_script_execution(monkeypatch, script_path):
-    """Test execution of each example script while suppressing plot
-    display."""
-    # Patch plt.show to suppress plot display
+def test_example_script(monkeypatch, script_path):
+    """Run each example script and ensure it executes successfully."""
+    # Patch plt.show to prevent GUI windows during tests
     monkeypatch.setattr(plt, "show", no_op)
 
-    # Special handling for fitNPPt.py which depends on fitBulkNi.py
-    if script_path.endswith("fitNPPt.py"):
-        ni_script = script_path.replace("fitNPPt.py", "fitBulkNi.py")
-        ni_script_path = Path(ni_script)
-
-        if not ni_script_path.exists():
-            pytest.fail(
-                f"Required script {ni_script} not found for {script_path}"
-            )
-
-        # Run Ni calibration first
-        result_ni = subprocess.run(
-            ["python", str(ni_script_path)],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-        )
-        if result_ni.returncode != 0:
-            pytest.fail(
-                f"Calibration script {ni_script}",
-                " failed with error:\n{result_ni.stderr}",
-            )
-
-    # Run the target script
+    # Run the script as a subprocess
     result = subprocess.run(
         ["python", script_path],
         stdout=subprocess.PIPE,
@@ -53,7 +28,8 @@ def test_script_execution(monkeypatch, script_path):
         text=True,
     )
 
-    # Ensure the script runs successfully
-    assert (
-        result.returncode == 0
-    ), f"Script {script_path} failed with error:\n{result.stderr}"
+    # Fail if return code is nonzero
+    assert result.returncode == 0, (
+        f"Script {script_path} failed.\n"
+        f"STDOUT:\n{result.stdout}\n\nSTDERR:\n{result.stderr}"
+    )
