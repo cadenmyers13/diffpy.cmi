@@ -1,5 +1,6 @@
 import glob
 import subprocess
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import pytest
@@ -10,16 +11,39 @@ def no_op(*args, **kwargs):
     pass
 
 
-# Decorator to mark this as a pytest function and provide parameters
-@pytest.mark.parametrize(
-    "script_path", glob.glob("docs/examples/ch*/solutions/diffpy-cmi/*.py")
-)
+# Discover all example scripts
+example_scripts = glob.glob("docs/examples/ch*/solutions/diffpy-cmi/*.py")
+
+
+@pytest.mark.parametrize("script_path", example_scripts)
 def test_script_execution(monkeypatch, script_path):
-    """Test execution of each script while suppressing plot display."""
+    """Test execution of each example script while suppressing plot
+    display."""
     # Patch plt.show to suppress plot display
     monkeypatch.setattr(plt, "show", no_op)
 
-    # Run the script
+    # Special handling for fitNPPt.py which depends on fitBulkNi.py
+    if script_path.endswith("fitNPPt.py"):
+        ni_script = script_path.replace("fitNPPt.py", "fitBulkNi.py")
+        ni_script_path = Path(ni_script)
+
+        if ni_script_path.exists():
+            # Run Ni calibration first
+            result_ni = subprocess.run(
+                ["python", str(ni_script_path)],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+            if result_ni.returncode != 0:
+                pytest.skip(
+                    f"Skipping {script_path} because Ni ",
+                    "calibration failed:\n{result_ni.stderr}",
+                )
+        else:
+            pytest.skip(
+                f"Skipping {script_path} because {ni_script} is missing"
+            )
     result = subprocess.run(
         ["python", script_path],
         stdout=subprocess.PIPE,
@@ -27,7 +51,6 @@ def test_script_execution(monkeypatch, script_path):
         text=True,
     )
 
-    # Ensure the script runs successfully
     assert (
         result.returncode == 0
-    ), f"Script {script_path} failed with error: {result.stderr}"
+    ), f"Script {script_path} failed with error:\n{result.stderr}"
