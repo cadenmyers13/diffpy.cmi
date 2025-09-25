@@ -27,7 +27,5 @@ jobs:
           conda list | grep -i ipympl
         fi
 
-        echo "Running tests for diffpy.cmi dependencies"
-        cmi install _tests
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
