@@ -1,19 +1,13 @@
-name: Full tests on merge
+name: Tests on PR push
 
 on:
-  push:
-    branches:
-      - "**"
+  pull_request:
   workflow_dispatch:
+  workflow_call:
 
 jobs:
-  call-fast-tests:
-    uses: ./.github/workflows/tests-on-push.yml
-    secrets: inherit
-
-  full-examples:
+  fast-tests:
     runs-on: ubuntu-latest
-    needs: call-fast-tests
     defaults:
       run:
         shell: bash -l {0}
@@ -40,10 +34,21 @@ jobs:
           conda install --file requirements/tests.txt
           python -m pip install . --no-deps
 
-      - name: Run all examples
+      - name: Run extra CLI commands
         run: |
-          pytest --cov
-          coverage report -m
+          set -Eeuo pipefail
+          cmi -h
+          cmi env
+          cmi pack list
+          cmi profile list
+          cmi install plotting
+
+      - name: Quick tests (subpackages + Ni example)
+        run: |
+          FAST_EXAMPLES=1 pytest --cov
+
+      - name: Coverage report
+        run: coverage report -m
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
