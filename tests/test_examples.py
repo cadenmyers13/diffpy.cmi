@@ -1,4 +1,10 @@
+import os
 import runpy
+
+import pytest
+
+if not os.getenv("RUN_EXAMPLES"):
+    pytest.skip("Skipping test_examples.py", allow_module_level=True)
 
 
 def test_all_examples(tmp_examples):
