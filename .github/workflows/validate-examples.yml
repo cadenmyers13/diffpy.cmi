@@ -49,4 +49,4 @@ jobs:
         run: |
           set -Eeuo pipefail
           echo "Running example scripts"
-          pytest validators/validate_examples.py --cov
+          pytest tests/validate_examples.py --cov
