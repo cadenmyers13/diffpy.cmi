@@ -20,7 +20,9 @@ def conda_env(tmp_path):
     )
     yield env_dir_str
     subprocess.run(
-        ["conda", "env", "remove", "-p", env_dir_str, "-y"], check=True
+        ["conda", "env", "remove", "-p", env_dir_str, "-y"],
+        check=True,
+        shell=shell,
     )
 
 
